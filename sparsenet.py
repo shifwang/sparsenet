@@ -14,14 +14,14 @@ def sparsenet(patch_dim=64, neurons=128, lambdav=0.1, eta=6.0, num_trials=3000, 
   num_trials: Learning Iterations
   batch_size: Batch size per iteration
   border: Border when extracting image patches
-  Inference: 'lca' or 'fista'  
+  Inference: 'lca' or 'fista'
   """
   IMAGES = scipy.io.loadmat('./IMAGES.mat')
   IMAGES = IMAGES['IMAGES']
 
   (imsize, imsize, num_images) = np.shape(IMAGES)
 
-  sz = np.sqrt(patch_dim)
+  sz = int(np.sqrt(patch_dim))
   eta = eta / batch_size
 
   # Initialize basis functions
@@ -33,12 +33,11 @@ def sparsenet(patch_dim=64, neurons=128, lambdav=0.1, eta=6.0, num_trials=3000, 
   for t in range(num_trials):
 
     # Choose a random image
-    imi = np.ceil(num_images * random.uniform(0, 1))
+    imi = int(np.ceil(num_images * random.uniform(0, 1)))
 
     for i in range(batch_size):
-      r = border + np.ceil((imsize-sz-2*border) * random.uniform(0, 1))
-      c = border + np.ceil((imsize-sz-2*border) * random.uniform(0, 1))
-
+      r = int(border + np.ceil((imsize-sz-2*border) * random.uniform(0, 1)))
+      c = int(border + np.ceil((imsize-sz-2*border) * random.uniform(0, 1)))
       I[:,i] = np.reshape(IMAGES[r:r+sz, c:c+sz, imi-1], patch_dim, 1)
 
     # Coefficient Inference
@@ -61,15 +60,16 @@ def sparsenet(patch_dim=64, neurons=128, lambdav=0.1, eta=6.0, num_trials=3000, 
     # Plot every 100 iterations
     if np.mod(t,100) == 0:
       print "Iteration " + str(t)
-      side = np.sqrt(neurons)
+      side = int(np.sqrt(neurons))
       image = np.zeros((sz*side+side,sz*side+side))
-      for i in range(side.astype(int)):
-        for j in range(side.astype(int)):
+      for i in range(side):
+        for j in range(side):
           patch = np.reshape(Phi[:,i*side+j],(sz,sz))
           patch = patch/np.max(np.abs(patch))
           image[i*sz+i:i*sz+sz+i,j*sz+j:j*sz+sz+j] = patch
 
       plt.imshow(image, cmap=cm.Greys_r, interpolation="nearest")
+      plt.show()
 
   return Phi
 
